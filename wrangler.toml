@@ -1,0 +1,7 @@
+name = "ob-checker-bot"
+main = "src/worker.js"
+workers_dev = true
+compatibility_date = "2025-06-12"
+
+[observability]
+enabled = true
