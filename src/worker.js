@@ -12,8 +12,8 @@ https://github.com/tikrack/OB_Checker_bot
 `
 
 const OB_TEXT = [
-  "شما دارای اوب هستید!",
-  "شما اوب ندارید!"
+  "این فرد اوبی خیلی زیاد است! ❌",
+  "این فرد پاک پاک و پر از تیتسترون است! ✅"
 ];
 
 function escapeHTML(str) {
@@ -58,8 +58,12 @@ export default {
           return new Response('No username provided');
         }
 
-        const debugData = escapeHTML(JSON.stringify(update, null, 2));
-        await sendMessage(chatId, `<code>${debugData}</code>`);
+
+        if (username.length < 9) {
+          await sendMessage(chatId, OB_TEXT[1]);
+        }else {
+          await sendMessage(chatId, OB_TEXT[0]);
+        }
 
         return new Response('OK');
       }
