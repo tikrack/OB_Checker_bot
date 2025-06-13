@@ -1,10 +1,34 @@
 const TELEGRAM_BOT_TOKEN = '7603386640:AAGpe3IDJbE2WgoDuvVuv8qoiTeyHgnBNfE';
+const ABOUT_TEXT = `
+سلام خوبی؟
+من یه ربات سادم که خیلی سریع نوشته شدم
+کارمم که معاومه دیگه سوال نداره اصلا نمیدونم چرا این دکمه رو زدی
+حالا به هر حال
+
+من رو @tikrack 👨🏼‍💻 ساخته اگرم خواستی کد هامو ببینی:
+https://github.com/tikrack/OB_Checker_bot
+
+اره خلاصه چاکریم ✨🍓
+`
+
+const OB_TEXT = [
+  "شما دارای اوب هستید!",
+  "شما اوب ندارید!"
+];
+
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 async function sendMessage(chatId, text) {
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
   const body = {
     chat_id: chatId,
     text: text,
+    parse_mode: "HTML",
   };
 
   return await fetch(url, {
@@ -16,19 +40,35 @@ async function sendMessage(chatId, text) {
 
 export default {
   async fetch(request) {
-    const url = new URL(request.url);
-
-    if (request.method === 'POST' && url.pathname === '/webhook') {
+    if (request.method === 'POST') {
       const update = await request.json();
       const message = update.message;
+      const chatId = message?.chat?.id;
 
-      if (message?.text?.startsWith('/test')) {
-        const chatId = message.chat.id;
-
-        await sendMessage(chatId, 'hello for you');
+      if (!message?.text?.startsWith('/ob') && !message?.text?.startsWith('/about')) {
+        return new Response('Ignored');
       }
 
-      return new Response('OK');
+      if (message?.text?.startsWith("/ob")) {
+        const args = message.text.trim().split(" ");
+        const username = args[1];
+
+        if (!username || !username.startsWith("@")) {
+          await sendMessage(chatId, `مرتیکه خر میخاری؟ اینجوری باید وارد کنی\n<code>/ob @username</code>`);
+          return new Response('No username provided');
+        }
+
+        const debugData = escapeHTML(JSON.stringify(update, null, 2));
+        await sendMessage(chatId, `<code>${debugData}</code>`);
+
+        return new Response('OK');
+      }
+
+      if (message?.text?.startsWith("/about")) {
+        await sendMessage(chatId, ABOUT_TEXT);
+
+        return new Response('OK');
+      }
     }
 
     return new Response('Not Found', { status: 404 });
